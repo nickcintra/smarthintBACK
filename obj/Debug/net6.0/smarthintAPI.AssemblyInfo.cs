@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("smarthintAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ad0ff7b432dcb04fc864effec097e9609d2bab82")]
 [assembly: System.Reflection.AssemblyProductAttribute("smarthintAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("smarthintAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

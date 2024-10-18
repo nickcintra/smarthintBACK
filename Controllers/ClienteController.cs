@@ -6,6 +6,8 @@ using smarthintAPI.Requests;
 using smarthintAPI.Services;
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
+
 
 namespace smarthintAPI.Controllers;
 
@@ -13,63 +15,61 @@ namespace smarthintAPI.Controllers;
 [Route("api/[controller]")]
 public class ClienteController : ControllerBase
 {
-    private SmarthintDBContext _context;
-    private ClienteService _service;
+    private readonly IClienteService _clienteService;
 
-    public ClienteController(SmarthintDBContext context, ClienteService service)
+    public ClienteController(IClienteService clienteService)
     {
-        _context = context;
-        _service = service;
+        _clienteService = clienteService;
     }
 
     [HttpPost]
     public IActionResult CadastrarCliente([FromBody] ClienteRequest cliente)
     {
-        bool clienteRetorno = _service.CriarCliente(cliente);
-        if(clienteRetorno)
+        try
         {
-            return Ok("Cliente cadastrado com sucesso!");
+            bool clienteRetorno = _clienteService.CriarCliente(cliente);
+
+            if(clienteRetorno)
+            {
+                return Ok(new { message = "Cliente cadastrado com sucesso!" });
+            }
+
+            return BadRequest(new { message = "Falha ao cadastrar Cliente." });
+
         }
-        else
-        {
-            return BadRequest("Falha ao cadastrar Cliente.");
+        catch (Exception ex) {
+            return StatusCode(500, new { message = "Erro interno no servidor.", detalhes = ex.Message });
         }
     }
 
     [HttpGet]
     public IActionResult ConsultarClientes([FromQuery] int pageNumber = 1, int pageSize = 10)
     {
-        var results = _service.GetAllClientes().ToList();
-        var totalCount = results.Count();
-        var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+        var pagedResults = _clienteService.GetTodosClientes(pageNumber, pageSize);
 
-        var pagedResults = results
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
 
-        if (pagedResults != null)
+        if (pagedResults.Items.Any())
         {
             var response = new
             {
-                totalPages,
-                currentPage = pageNumber,
-                pageSize,
-                items = pagedResults
+                pagedResults.TotalPages,
+                pagedResults.CurrentPage,
+                pagedResults.PageSize,
+                Items = pagedResults.Items
             };
 
             return Ok(response);
         }
         else
         {
-            return BadRequest("Nenhuma cliente encontrado");
+            return BadRequest("Nenhum cliente encontrado.");
         }
     }
 
     [HttpGet("{id}")]
     public IActionResult ConsultaClienteId(int id)
     {
-        var cliente = _service.GetCliente(id);
+        var cliente = _clienteService.GetCliente(id);
 
         if(cliente != null)
         {
@@ -82,21 +82,29 @@ public class ClienteController : ControllerBase
     }
 
     [HttpGet("filtro")]
-    public IActionResult ConsultaClienteFiltro([FromQuery]FiltroRequest filtroRequest)
+    public IActionResult ConsultaClienteFiltro([FromQuery]FiltroRequest filtroRequest, int pageNumber = 1, int pageSize = 10)
     {
-        var result = _service.GetClientesFiltro(filtroRequest);
+        var pagedResults = _clienteService.GetClientesFiltro(filtroRequest, pageNumber, pageSize);
 
-        if (result != null)
+        if (pagedResults.Items.Any())
         {
-            return Ok(result);
+            var response = new
+            {
+                pagedResults.TotalPages,
+                pagedResults.CurrentPage,
+                pagedResults.PageSize,
+                Items = pagedResults.Items
+            };
+
+            return Ok(response);
         }
         else
         {
-            return BadRequest("Nenhum cliente encontrado");
+            return BadRequest("Nenhum cliente encontrado.");
         }
     }
 
-    //// PUT: api/produtos/1
+    //PUT: api/produtos/1
     //[HttpPut("{id}")]
     //public IActionResult Put(int id, [FromBody] Produto produtoAtualizado)
     //{

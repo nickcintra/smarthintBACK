@@ -3,20 +3,34 @@ using smarthintAPI.Data;
 using smarthintAPI.Models;
 using smarthintAPI.Repositories;
 using smarthintAPI.Requests;
+using static smarthintAPI.Services.PaginationHelper;
 
 namespace smarthintAPI.Services
 {
-    public class ClienteService
+    public class ClienteService : IClienteService
     {
-        private readonly ClienteRepository clienteRepository;
-        public ClienteService(SmarthintDBContext context)
+        private readonly IClienteRepository _clienteRepository;
+
+        public ClienteService(IClienteRepository clienteRepository)
         {
-            clienteRepository = new ClienteRepository(context);
+            _clienteRepository = clienteRepository;
         }
 
-        public IEnumerable<Cliente> GetAllClientes()
+        public bool CriarCliente(ClienteRequest clienteRequest)
         {
-            return clienteRepository.GetClientes();
+            int clienteId = _clienteRepository.CriarCliente(clienteRequest);
+
+            if (clienteId > 0) {
+                return true;
+            }
+
+            return false;
+        }
+
+        public PagedResult<Cliente> GetTodosClientes(int pageNumber, int pageSize)
+        {
+            var query = _clienteRepository.GetClientes(); 
+            return PaginationHelper.Paginate(query.AsQueryable(), pageNumber, pageSize);
         }
 
         public Cliente GetCliente(int id)
@@ -24,7 +38,7 @@ namespace smarthintAPI.Services
             
             try
             {
-                return clienteRepository.GetClientesId(id);
+                return _clienteRepository.GetClienteId(id);
             }
             catch (Exception ex)
             {
@@ -32,31 +46,14 @@ namespace smarthintAPI.Services
             }
         }
 
-        public IQueryable GetClientesFiltro(FiltroRequest filtroRequest)
+        public PagedResult<Cliente> GetClientesFiltro(FiltroRequest filtroRequest, int pageNumber, int pageSize)
         {
-            
-            try
-            {
-                return clienteRepository.GetClientesFiltro(filtroRequest);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao obter cliente: " + ex.Message);
-            }
+            var query = _clienteRepository.GetClientesFiltro(filtroRequest);
+            return PaginationHelper.Paginate(query.AsQueryable(), pageNumber, pageSize);
+
         }
 
-        public bool CriarCliente(ClienteRequest clienteRequest)
-        {
-            try
-            {
-                clienteRepository.CriarCliente(clienteRequest);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                return false;
-            }
-        }
+       
 
     }
 }

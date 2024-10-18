@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using smarthintAPI.Data;
+using smarthintAPI.Repositories;
 using smarthintAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +27,12 @@ builder.Services.AddControllers();
 // Add ClienteService
 builder.Services.AddScoped<ClienteService>();
 
+
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>(); // Adiciona o ClienteRepository como Scoped
+builder.Services.AddScoped<IClienteService, ClienteService>();
+
+
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -43,8 +50,6 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 
 app.UseHttpsRedirection();
-
-app.MapControllers();
 
 app.MapControllers();
 

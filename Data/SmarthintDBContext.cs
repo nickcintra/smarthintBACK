@@ -8,5 +8,6 @@ namespace smarthintAPI.Data
         public SmarthintDBContext(DbContextOptions<SmarthintDBContext> context) : base(context) { }
 
         public DbSet<Cliente> Clientes { get; set; }
+
     }
 }
